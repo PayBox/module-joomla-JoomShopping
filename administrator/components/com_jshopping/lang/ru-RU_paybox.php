@@ -7,7 +7,7 @@ define('_JSHOP_paybox_SECRET_KEY','Секретное слово');
 define('_JSHOP_paybox_SECRET_KEY_DESCRIPTION','Можно узнать так же по адресу https://paybox.kz/admin/merchants.php');
 define('_JSHOP_paybox_LIFETIME','Время жизни счета');
 define('_JSHOP_paybox_LIFETIME_DESCRIPTION','В часах. Максимальное значение 168. Используется в ПС, не поддерживающих CHECK');
-define('_JSHOP_paybox_TRANSACTION_END_DESCRIPTION','Выберите статус заказа, который будет установлен, если PAYBOX транзакция прошла успешно. ');
-define('_JSHOP_paybox_TRANSACTION_PENDING_DESCRIPTION','Выберите статус заказа, который будет установлен, если PAYBOX транзакция незавершена. ');
-define('_JSHOP_paybox_TRANSACTION_FAILED_DESCRIPTION','Выберите статус заказа, который будет установлен, если PAYBOX транзакция прошла неуспешно. ');
+define('_JSHOP_paybox_TRANSACTION_END_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox прошла успешно. ');
+define('_JSHOP_paybox_TRANSACTION_PENDING_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox незавершена. ');
+define('_JSHOP_paybox_TRANSACTION_FAILED_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox прошла неуспешно. ');
 ?>
