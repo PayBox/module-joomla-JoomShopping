@@ -1,0 +1,2 @@
+INSERT INTO `#__jshopping_payment_method` (`name_en-GB`, `description_en-GB`, `name_de-DE`, `description_de-DE`, `payment_code`, `payment_class`, `payment_publish`, `payment_ordering`, `payment_params`, `payment_type`, `price`, `price_type`, `tax_id`, `show_descr_in_email`, `name_ru-RU`, `description_ru-RU`) VALUES
+('PayBox', '', 'PayBox', '', 'paybox', 'pm_paybox', 1, 3, 'test_mode=1\r\nmerchant_id=0\r\nsecret_key=test\r\nlifetime=24\r\ntransaction_end_status=7\r\ntransaction_pending_status=1\r\ntransaction_failed_status=3\r\n', 2, 0.00, 1, 1, 0, 'PayBox', '');
