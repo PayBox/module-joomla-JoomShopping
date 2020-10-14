@@ -2,7 +2,7 @@
 
 Модуль интеграции интернет-магазина [JoomShopping](https://joomshopping.pro/) (модуль Joomla) с платежной системой [PayBox](https://paybox.money).
 
-[JoomShopping 4.18.x](https://github.com/PayBox/module-joomla-JoomShopping/archive/4.18.zip) 
+[JoomShopping 4.18.x](https://github.com/PayBox/module-joomla-JoomShopping/raw/4.18/module-joomla-JoomShopping-4.18.zip) 
 
 ### Инструкция
 
