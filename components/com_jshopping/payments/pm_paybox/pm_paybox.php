@@ -69,7 +69,7 @@ class pm_paybox extends PaymentRoot
 
 
 			case 'result':
-				$checkout = JModel::getInstance('checkout', 'jshop');
+				$checkout = JModelList::getInstance('checkout', 'jshop');
 				$arrParams = $_POST;
 				$thisScriptName = PG_Signature::getOurScriptName();
 				if ( !PG_Signature::check($arrParams['pg_sig'], $thisScriptName, $arrParams, $pmconfigs['secret_key']) )
