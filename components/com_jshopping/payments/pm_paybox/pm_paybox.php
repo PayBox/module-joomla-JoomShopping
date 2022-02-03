@@ -23,22 +23,20 @@ class pm_paybox extends PaymentRoot
         foreach ($array_params as $key)
             if (!isset($params[$key]))
                 $params[$key] = '';
-        $orders = &JModel::getInstance('orders', 'JshoppingModel');
-        $currency = &JModel::getInstance('currencies', 'JshoppingModel');
+        $orders = &JModelList::getInstance('orders', 'JshoppingModel');
+        $currency = &JModelList::getInstance('currencies', 'JshoppingModel');
 
         include(dirname(__FILE__)."/adminparamsform.php");
 
         jimport('joomla.html.pane');
-        $pane =& JPane::getInstance('Tabs');
-        echo $pane->endPanel();
+        echo JHtmlTabs::end();
     }
 
     function checkTransaction($pmconfigs, $order, $act)
     {
 		switch ($act) {
 			case 'check':
-				unset($_GET['Itemid']);
-				$arrParams = $_GET;
+				$arrParams = $_POST;
 				$thisScriptName = PG_Signature::getOurScriptName();
 
 				if ( !PG_Signature::check($arrParams['pg_sig'], $thisScriptName, $arrParams, $pmconfigs['secret_key']) )
@@ -70,42 +68,41 @@ class pm_paybox extends PaymentRoot
 				break;
 
 
-				case 'result':
-					unset($_GET['Itemid']);
-					$checkout = JModel::getInstance('checkout', 'jshop');
-					$arrParams = $_GET;
-					$thisScriptName = PG_Signature::getOurScriptName();
-					if ( !PG_Signature::check($arrParams['pg_sig'], $thisScriptName, $arrParams, $pmconfigs['secret_key']) )
-						die("Bad signature");
+			case 'result':
+				$checkout = JModelList::getInstance('checkout', 'jshop');
+				$arrParams = $_POST;
+				$thisScriptName = PG_Signature::getOurScriptName();
+				if ( !PG_Signature::check($arrParams['pg_sig'], $thisScriptName, $arrParams, $pmconfigs['secret_key']) )
+					die("Bad signature");
 
-					$xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><response/>');
-					$order_id = $arrParams['pg_order_id'];
-					$js_result_status = 'ok';
-					$pg_description = 'Оплата принята';
-					if ( $arrParams['pg_result'] == 1 ) {
-						if($pmconfigs['transaction_pending_status'] == $order->order_status){
-							$checkout->changeStatusOrder($order->order_id, $pmconfigs['transaction_end_status'], 1);
-						}
-						else{
-							$js_result_status = 'error';
-							$pg_description = 'Оплата не может быть принята';
-							$xml->addChild('pg_error_description', 'Оплата не может быть принята');
-							if($arrParams['pg_can_reject']){
-								$js_result_status = 'reject';
-							}
+				$xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><response/>');
+				$order_id = $arrParams['pg_order_id'];
+				$js_result_status = 'ok';
+				$pg_description = 'Оплата принята';
+				if ( $arrParams['pg_result'] == 1 ) {
+					if($pmconfigs['transaction_pending_status'] == $order->order_status){
+						$checkout->changeStatusOrder($order->order_id, $pmconfigs['transaction_end_status'], 1);
+					}
+					else{
+						$js_result_status = 'error';
+						$pg_description = 'Оплата не может быть принята';
+						$xml->addChild('pg_error_description', 'Оплата не может быть принята');
+						if($arrParams['pg_can_reject']){
+							$js_result_status = 'reject';
 						}
 					}
-					else {
-						$checkout->changeStatusOrder($order->order_id, $pmconfigs['transaction_failed_status'], 1);
-					}
-					// обрабатываем случай успешной оплаты заказа с номером $order_id
-					$xml->addChild('pg_salt', $arrParams['pg_salt']); // в ответе необходимо указывать тот же pg_salt, что и в запросе
-					$xml->addChild('pg_status', $js_result_status);
-					$xml->addChild('pg_description', $pg_description);
-					$xml->addChild('pg_sig', PG_Signature::makeXML($thisScriptName, $xml, $pmconfigs['secret_key']));
-					print $xml->asXML();
-					die();
-					break;
+				}
+				else {
+					$checkout->changeStatusOrder($order->order_id, $pmconfigs['transaction_failed_status'], 1);
+				}
+				// обрабатываем случай успешной оплаты заказа с номером $order_id
+				$xml->addChild('pg_salt', $arrParams['pg_salt']); // в ответе необходимо указывать тот же pg_salt, что и в запросе
+				$xml->addChild('pg_status', $js_result_status);
+				$xml->addChild('pg_description', $pg_description);
+				$xml->addChild('pg_sig', PG_Signature::makeXML($thisScriptName, $xml, $pmconfigs['secret_key']));
+				print $xml->asXML();
+				die();
+				break;
 
 
 			default:
@@ -157,10 +154,7 @@ class pm_paybox extends PaymentRoot
 		$arrReq['pg_language'] = $language;
 		$arrReq['pg_testing_mode'] = $pmconfigs['test_mode']?1:0;
 
-		if($order->currency_code_iso == "RUB")
-			$arrReq['pg_currency'] = "RUR";
-		else
-			$arrReq['pg_currency'] = $order->currency_code_iso;
+		$arrReq['pg_currency'] = $order->currency_code_iso;
 
 		$arrReq['pg_salt'] = rand(21,43433);
 		$arrReq['pg_sig'] = PG_Signature::make('payment.php', $arrReq, $pmconfigs['secret_key']);
