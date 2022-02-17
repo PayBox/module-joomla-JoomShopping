@@ -10,4 +10,7 @@ define('_JSHOP_paybox_LIFETIME_DESCRIPTION','Max 168 hours. Only for PS without 
 define('_JSHOP_paybox_TRANSACTION_END_DESCRIPTION','Select the order status to which the actual order is set, if the PayBox transaction was successful.');
 define('_JSHOP_paybox_TRANSACTION_PENDING_DESCRIPTION','The order Status to which Orders are set, which have no completed Payment Transaction.');
 define('_JSHOP_paybox_TRANSACTION_FAILED_DESCRIPTION','Select an order status for failed PayBox transactions.');
+define('_JSHOP_paybox_ENABLE_OFD','Enable OFD.');
+define('_JSHOP_paybox_TAX_TYPE','Тax type.');
 ?>
+

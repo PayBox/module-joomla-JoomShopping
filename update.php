@@ -2,7 +2,7 @@
 $name = "PayBox payment method";
 
 $element = "paybox";
-$version = "1.0.0";
+$version = "4.18.2";
 
 $addon = JTable::getInstance('addon', 'jshop');
 $addon->loadAlias($element);

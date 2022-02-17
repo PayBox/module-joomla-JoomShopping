@@ -5,35 +5,35 @@ include("PG_Signature.php");
 class pm_paybox extends PaymentRoot
 {
 
-    function showPaymentForm($params, $pmconfigs)
-    {
-        include(dirname(__FILE__)."/paymentform.php");
-    }
+	function showPaymentForm($params, $pmconfigs)
+	{
+		include(dirname(__FILE__)."/paymentform.php");
+	}
 
-    function showAdminFormParams($params)
-    {
-        $jmlThisDocument = & JFactory::getDocument();
-        switch ($jmlThisDocument->language)
-        {
-            case 'en-gb': include(JPATH_SITE.'/administrator/components/com_jshopping/lang/en-GB_paybox.php'); $language = 'en'; break;
-            case 'ru-ru': include(JPATH_SITE.'/administrator/components/com_jshopping/lang/ru-RU_paybox.php'); $language = 'ru'; break;
-            default: include(JPATH_SITE.'/administrator/components/com_jshopping/lang/ru-RU_paybox.php');
-        }
-        $array_params = array('test_mode', 'merchant_id', 'secret_key', 'transaction_end_status', 'transaction_pending_status', 'transaction_failed_status');
-        foreach ($array_params as $key)
-            if (!isset($params[$key]))
-                $params[$key] = '';
-        $orders = &JModelList::getInstance('orders', 'JshoppingModel');
-        $currency = &JModelList::getInstance('currencies', 'JshoppingModel');
+	function showAdminFormParams($params)
+	{
+		$jmlThisDocument = & JFactory::getDocument();
+		switch ($jmlThisDocument->language)
+		{
+			case 'en-gb': include(JPATH_SITE.'/administrator/components/com_jshopping/lang/en-GB_paybox.php'); $language = 'en'; break;
+			case 'ru-ru': include(JPATH_SITE.'/administrator/components/com_jshopping/lang/ru-RU_paybox.php'); $language = 'ru'; break;
+			default: include(JPATH_SITE.'/administrator/components/com_jshopping/lang/ru-RU_paybox.php');
+		}
+		$array_params = array('test_mode', 'merchant_id', 'secret_key', 'transaction_end_status', 'transaction_pending_status', 'transaction_failed_status');
+		foreach ($array_params as $key)
+			if (!isset($params[$key]))
+				$params[$key] = '';
+		$orders = &JModelList::getInstance('orders', 'JshoppingModel');
+		$currency = &JModelList::getInstance('currencies', 'JshoppingModel');
 
-        include(dirname(__FILE__)."/adminparamsform.php");
+		include(dirname(__FILE__)."/adminparamsform.php");
 
-        jimport('joomla.html.pane');
-        echo JHtmlTabs::end();
-    }
+		jimport('joomla.html.pane');
+		echo JHtmlTabs::end();
+	}
 
-    function checkTransaction($pmconfigs, $order, $act)
-    {
+	function checkTransaction($pmconfigs, $order, $act)
+	{
 		switch ($act) {
 			case 'check':
 				$arrParams = $_POST;
@@ -112,11 +112,20 @@ class pm_paybox extends PaymentRoot
 
 	function showEndForm($pmconfigs, $order)
 	{
-        $check_url = JURI::root() . "index.php?option=com_jshopping&controller=checkout&task=step7&act=check&js_paymentclass=pm_paybox&type=check&order_id=".$order->order_id;
-        $result_url = JURI::root() . "index.php?option=com_jshopping&controller=checkout&task=step7&act=result&js_paymentclass=pm_paybox&type=check&order_id=".$order->order_id;
+		$check_url = JURI::root() . "index.php?option=com_jshopping&controller=checkout&task=step7&act=check&js_paymentclass=pm_paybox&type=check&order_id=".$order->order_id;
+		$result_url = JURI::root() . "index.php?option=com_jshopping&controller=checkout&task=step7&act=result&js_paymentclass=pm_paybox&type=check&order_id=".$order->order_id;
 
-        // sum of order
-        $out_summ = $order->order_total / $order->currency_exchange;
+		// sum of order
+		$out_summ = $order->order_total / $order->currency_exchange;
+
+		foreach ($order->getAllItems() as $arrItem) {
+			$pgReceiptPositions[] = [
+				'count' => $arrItem->product_quantity,
+				'name' => $arrItem->product_name,
+				'tax_type' => $pmconfigs['tax_type'],
+				'price' => $arrItem->product_item_price,
+			];
+		}
 
 		$arrReq = array();
 		/* Обязательные параметры */
@@ -145,11 +154,11 @@ class pm_paybox extends PaymentRoot
 
 		$jmlThisDocument = & JFactory::getDocument();
 		switch ($jmlThisDocument->language)
-        {
-            case 'en-gb': $language = 'EN'; break;
-            case 'ru-ru': $language = 'RU'; break;
-            default: $language = 'EN'; break;
-        }
+		{
+			case 'en-gb': $language = 'EN'; break;
+			case 'ru-ru': $language = 'RU'; break;
+			default: $language = 'EN'; break;
+		}
 
 		$arrReq['pg_language'] = $language;
 		$arrReq['pg_testing_mode'] = $pmconfigs['test_mode']?1:0;
@@ -157,18 +166,26 @@ class pm_paybox extends PaymentRoot
 		$arrReq['pg_currency'] = $order->currency_code_iso;
 
 		$arrReq['pg_salt'] = rand(21,43433);
+
+		if ($pmconfigs['enable_ofd']) {
+			$arrReq['pg_receipt_positions'] = $pgReceiptPositions;
+		}
+
 		$arrReq['pg_sig'] = PG_Signature::make('payment.php', $arrReq, $pmconfigs['secret_key']);
+
+
 		$query = http_build_query($arrReq);
 
 		header("Location: https://api.paybox.money/payment.php?$query");
-      }
+		/****************************************************************************/
+	}
 
-    function getUrlParams($pmconfigs)
-    {
-        $params = array();
-        $params['order_id'] = JRequest::getInt("order_id");
-        return $params;
-    }
+	function getUrlParams($pmconfigs)
+	{
+		$params = array();
+		$params['order_id'] = JRequest::getInt("order_id");
+		return $params;
+	}
 
 }
 ?>

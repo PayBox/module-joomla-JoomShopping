@@ -10,4 +10,7 @@ define('_JSHOP_paybox_LIFETIME_DESCRIPTION','В часах. Максимальн
 define('_JSHOP_paybox_TRANSACTION_END_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox прошла успешно. ');
 define('_JSHOP_paybox_TRANSACTION_PENDING_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox незавершена. ');
 define('_JSHOP_paybox_TRANSACTION_FAILED_DESCRIPTION','Выберите статус заказа, который будет установлен, если транзакция в PayBox прошла неуспешно. ');
+define('_JSHOP_paybox_ENABLE_OFD','Включить ОФД');
+define('_JSHOP_paybox_TAX_TYPE','Тип налога');
 ?>
+

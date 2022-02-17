@@ -7,7 +7,7 @@ class PG_Signature {
 	 * @param string $url
 	 * @return string
 	 */
-	public static function getScriptNameFromUrl ( $url )
+	public static function getScriptNameFromUrl( $url )
 	{
 		$path = parse_url($url, PHP_URL_PATH);
 		$len  = strlen($path);
@@ -22,7 +22,7 @@ class PG_Signature {
 	 *
 	 * @return string
 	 */
-	public static function getOurScriptName ()
+	public static function getOurScriptName()
 	{
 		return self::getScriptNameFromUrl( $_SERVER['PHP_SELF'] );
 	}
@@ -34,9 +34,9 @@ class PG_Signature {
 	 * @param string $strSecretKey
 	 * @return string
 	 */
-	public static function make ( $strScriptName, $arrParams, $strSecretKey )
+	public static function make( $strScriptName, $arrParams, $strSecretKey )
 	{
-		$arrFlatParams = self::makeFlatParamsArray($arrParams);
+        $arrFlatParams = self::makeFlatParamsArray($arrParams, '', true);
 		return md5( self::makeSigStr($strScriptName, $arrFlatParams, $strSecretKey) );
 	}
 
@@ -48,7 +48,7 @@ class PG_Signature {
 	 * @param string $strSecretKey
 	 * @return bool
 	 */
-	public static function check ( $signature, $strScriptName, $arrParams, $strSecretKey )
+	public static function check( $signature, $strScriptName, $arrParams, $strSecretKey )
 	{
 		return (string)$signature === self::make($strScriptName, $arrParams, $strSecretKey);
 	}
@@ -62,7 +62,7 @@ class PG_Signature {
 	 * @param string $strSecretKey
 	 * @return string
 	 */
-	static function debug_only_SigStr ( $strScriptName, $arrParams, $strSecretKey ) {
+	static function debug_only_SigStr( $strScriptName, $arrParams, $strSecretKey ) {
 		return self::makeSigStr($strScriptName, $arrParams, $strSecretKey);
 	}
 
@@ -77,35 +77,40 @@ class PG_Signature {
 
 		return join(';', $arrParams);
 	}
-	
-	private static function makeFlatParamsArray ( $arrParams, $parent_name = '' )
-	{
-		$arrFlatParams = array();
-		$i = 0;
-		foreach ( $arrParams as $key => $val ) {
-			
-			$i++;
-			if ( 'pg_sig' == $key )
-				continue;
-				
-			/**
-			 * Имя делаем вида tag001subtag001
-			 * Чтобы можно было потом нормально отсортировать и вложенные узлы не запутались при сортировке
-			 */
-			$name = $parent_name . $key . sprintf('%03d', $i);
 
-			if (is_array($val) ) {
-				$arrFlatParams = array_merge($arrFlatParams, self::makeFlatParamsArray($val, $name));
-				continue;
-			}
+    private static function makeFlatParamsArray ($arrParams, $parent_name = '', $ignoreEmptyParams = false)
+    {
+        $arrFlatParams = [];
+        $i = 0;
+        foreach ($arrParams as $key => $val) {
+            $i++;
+            if ( (string)$key === 'pg_sig' ) {
+                continue;
+            }
+            /**
+             * Имя делаем вида tag001subtag001
+             * Чтобы можно было потом нормально отсортировать и вложенные узлы не запутались при сортировке
+             */
+            $name = $parent_name . $key . sprintf('%03d', $i);
+            if (is_array($val)) {
+                $arrFlatParams = array_merge($arrFlatParams, self::makeFlatParamsArray($val, $name, $ignoreEmptyParams));
+                continue;
+            }
+            $arrFlatParams += array($name => (string)$val);
+        }
 
-			$arrFlatParams += array($name => (string)$val);
-		}
+        return ($ignoreEmptyParams) ? self::clearArray($arrFlatParams) : $arrFlatParams;
 
-		return $arrFlatParams;
-	}
+    }
 
-	/********************** singing XML ***********************/
+    public static function clearArray($array)
+    {
+        return array_filter($array, function($v) {
+            return strlen($v);
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /********************** singing XML ***********************/
 
 	/**
 	 * make the signature for XML
